@@ -17,7 +17,7 @@ Anybody can contribute to this project especially in any of these areas:
 
 If you can't contribute in other ways, even just playing the game and sharing it with friends will help Vaquitas.
 
-Development is currently organized via Trello, but if you want to contributed by programming you having a Github will help.
+Development is currently organized via Trello, but if you want to contributed by programming having a Github account will help.
 
 Chat with us at [freenode](http://freenode.org) #vilmavaquita
 
