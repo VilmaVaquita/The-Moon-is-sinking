@@ -4,13 +4,13 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.249"
+version = "0.2.251"
 
 { htmlcup } = require 'htmlcup'
 
 htmlcup[x] = htmlcup.compileTag x for x in [ "svg", "rect", "g", "ellipse", "polygon", "line", "image", "defs", "linearGradient", "stop", "use" ]
 
-title = "Vilma, the happy Vaquita - Sunken Moon"
+title = "Vilma, the happy Vaquita - The Moon is sinking!"
 
 fs = require 'fs'
 
@@ -41,7 +41,7 @@ gameAreaSize = [ 240, 360 ]
 
 genPage = ->
  htmlcup.printHtml "<!DOCTYPE html>\n"
- htmlcup.html lang:"en", manifest:"SunkenMoon.appcache", style:"height:100%", ->
+ htmlcup.html lang:"en", manifest:"index.appcache", style:"height:100%", ->
   @head ->
     @meta charset:"utf-8"
     @meta name:"viewport", content:"width=480, user-scalable=no"
