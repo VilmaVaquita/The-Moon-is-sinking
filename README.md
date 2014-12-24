@@ -1,12 +1,10 @@
 This is the first episode of the Vilma Vaquita series.
 
-[Play Demo](http://vaquitas) (not complete yet, but partially playable)
+[Play Demo](http://vilmavaquita.github.io/The-Moon-is-sinking) (not complete yet, but partially playable)
 
 This game is optimized phones for but can also be played on PCs.
 
-Vaquitas are the most endangered and smallest marine cetacean.  We hope that this little games will become viral and help Vaquitas become more famous and more protected.
-
-Enjoy the game, and read more if you wish to contribute.
+Vaquitas are the most endangered and smallest marine cetacean.  We hope that these little games will become viral and help Vaquitas become more famous and more protected.
 
 ## Contributing
 
