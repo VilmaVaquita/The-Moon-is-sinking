@@ -1,6 +1,6 @@
 This is the first episode of the Vilma Vaquita series.
 
-[Play Demo](http://vilmavaquita.github.io/The-Moon-is-sinking) (not complete yet, but partially playable)
+[Play Demo](http://vilmavaquita.github.io/The-Moon-is-sinking/game.html) (not complete yet, but partially playable)
 
 This game is optimized phones for but can also be played on PCs.
 
@@ -17,7 +17,7 @@ Anybody can contribute to this project especially in any of these areas:
 
 If you can't contribute in other ways, even just playing the game and sharing it with friends will help Vaquitas.
 
-Chat with us at [FreeNode](http://freenode.org) #vilmavaquita
+Chat with us at [freenode](http://freenode.org) #vilmavaquita
 
 ## Contributors
 
