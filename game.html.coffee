@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.341"
+version = "0.2.342"
 
 { htmlcup } = require 'htmlcup'
 
@@ -387,9 +387,6 @@ genPage = ->
                   if (s = fvx * fvx + fvy * fvy * 2) > 6
                     fvx *= 0.8
                     fvy *= 0.8
-                  else
-                    fvx *= 0.95
-                    fvy *= 0.95
                   @px = (@fpx += (@fvx = fvx))|0
                   @py = (@fpy += (@fvy = fvy))|0
                   @vx = fvx|0
@@ -422,6 +419,9 @@ genPage = ->
               if (vx * vx + vy * vy * 2) > 6
                 vx *= 0.8
                 vy *= 0.8
+              else
+                fvx *= 0.95
+                fvy *= 0.95
               @vx = vx
               @vy = vy
               @px = (@fpx += @vx)
