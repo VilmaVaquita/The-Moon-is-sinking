@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.343"
+version = "0.2.347"
 
 { htmlcup } = require 'htmlcup'
 
@@ -412,11 +412,13 @@ genPage = ->
                 vx = 0
               else
                 vx += ax
+                # vx *= 0.9
               if ay * vy < 0
                 vy = 0
               else
                 vy += ay
-              if (vx * vx + vy * vy * 2) > 6
+                # vy * 0.9
+              if (vx * vx + vy * vy * 2) > 35
                 vx *= 0.8
                 vy *= 0.8
               else
