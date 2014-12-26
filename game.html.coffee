@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.251"
+version = "0.2.340"
 
 { htmlcup } = require 'htmlcup'
 
@@ -32,6 +32,7 @@ frames =
   stilla0: datauripng "Stilla-the-starfish.png"
   # cuteluterror: datauripng 'cutelu-terror-v3.png'
   seafloor: dataurijpeg "seafloor.png"
+  fontglyphs: datauripng "SimonettaFontRender.png"
 
 gameName = "#{title} v#{version}"
 
@@ -51,7 +52,7 @@ genPage = ->
     # Homescreen installed webapp on Android Chrome has weird name! (Web App)
     @link rel:"shortcut icon", href:icon
     @title title
-  @body style:"margin:0;border:0;padding:0;height:100%;width:100%;background:black", ->
+  @body style:"margin:0;border:0;padding:0;height:100%;width:100%;background:black;-webkit-font-smoothing:none", ->
     @div style:"visibility:hidden;position:absolute", ->
         @img id:"pixyvaquita", src:pixyvaquita
         @img id:"pixyvaquita_twist_l", src:frames.twist_l
@@ -62,6 +63,7 @@ genPage = ->
         @img id:"stilla0", src:frames.stilla0
         # @img id:"cuteluterror", src:frames.cuteluterror
         @img id:"seafloor", src:frames.seafloor
+        @img id:"fontglyphs", src:frames.fontglyphs
     @div style:"display:table;width:100%;max-width:100%;height:100%;margin:0;border:0;padding:0", ->
      @div style:"display:table-cell;vertical-align:middle;width:100%;margin:0;border:0;padding:0;text-align:center", ->
       @div style:"position:relative;display:inline-block",  width:"#{gameAreaSize[0]*2}", height:"#{gameAreaSize[1]*2}", ->
@@ -69,7 +71,7 @@ genPage = ->
         @header style:"position:absolute;top:0;left:0;font-size:14px;width:100%;color:black", ->
           @span gameName
           @span " - "
-          @a target:"_blank", href:"index.html", "Save Vaqitas"
+          @a target:"_blank", href:"../index.html", "Save Vaqitas"
           @div style:"text-align:right", id:"fps"
     gameObjects = null
     @script type:"text/javascript", "gameObjects=#{JSON.stringify(gameObjects)};"
@@ -338,7 +340,7 @@ genPage = ->
               super()
             beat_lr: 0
             draw: ->
-                  vx = @vx + Math.floor(Math.random()*3) - 1
+                  vx = @vx + Math.floor(Math.random()*5) - 2
                   vy = @vy + Math.floor(Math.random()*3) - 1
                   x = @px
                   y = @py
@@ -363,6 +365,7 @@ genPage = ->
               @fpx = @px ? 0
               @fpy = @py ? 0
               @touch = @game.touchInput
+              @auto_to = 40
             beat_lr: 0
             move: ->
               { touch } = @
@@ -373,6 +376,30 @@ genPage = ->
               touch.ty = ty * 0.9 - ity
               ax = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0) - itx / 2
               ay = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0) - ity / 2
+              if ax is 0 and ay is 0
+                if @auto_to > 0 then @auto_to-- else
+                  @fvx ?= @vx
+                  @fvy ?= @vy
+                  fvx = @fvx * 1.2 + Math.random() - 0.5
+                  fvy = @fvy * 1.2 + Math.random() - 0.5
+                  x = @px
+                  y = @py
+                  if (s = fvx * fvx + fvy * fvy * 2) > 6
+                    fvx *= 0.8
+                    fvy *= 0.8
+                  @px = (@fpx += (@fvx = fvx))|0
+                  @py = (@fpy += (@fvy = fvy))|0
+                  @vx = fvx|0
+                  @vy = fvy|0
+                  return
+                  ax = vx/10 + (Math.random() - 0.5) * 2
+                  ay = vy/10 + (Math.random() - 0.5) * 2
+                  return
+              else
+                unless @auto_to > 0
+                  @fvx = null
+                  @fvy = null
+                @auto_to = 600
               if (aq = ax * ax + ay * ay) > 1
                 aq = sqrt(aq)
                 ax /= aq
@@ -385,12 +412,13 @@ genPage = ->
                 vx = 0
               else
                 vx += ax
-                vx *= 0.9
               if ay * vy < 0
                 vy = 0
               else
                 vy += ay
-                vy *= 0.9
+              if (vx * vx + vy * vy * 2) > 6
+                vx *= 0.8
+                vy *= 0.8
               @vx = vx
               @vy = vy
               @px = (@fpx += @vx)
@@ -805,7 +833,108 @@ genPage = ->
               @waterscapeSuperFrame.apply @, arguments
               t.restore()
             logzoom: 0
+          textRenderer: textRenderer =
+            glyphs: fontglyphs
+            charMap: {"0":{"w":5,"o":509},"1":{"w":3,"o":518},"2":{"w":4,"o":525},"3":{"w":4,"o":533},"4":{"w":4,"o":541},"5":{"w":4,"o":549},"6":{"w":4,"o":557},"7":{"w":3,"o":565},"8":{"w":4,"o":572},"9":{"w":4,"o":580}," ":{"w":2,"o":0},"a":{"w":4,"o":6},"b":{"w":4,"o":14},"c":{"w":4,"o":22},"d":{"w":4,"o":30},"e":{"w":4,"o":38},"f":{"w":2,"o":46},"g":{"w":4,"o":52},"h":{"w":4,"o":60},"i":{"w":2,"o":68},"j":{"w":2,"o":74},"k":{"w":4,"o":80},"l":{"w":2,"o":88},"m":{"w":6,"o":94},"n":{"w":4,"o":104},"o":{"w":4,"o":112},"p":{"w":4,"o":120},"q":{"w":4,"o":128},"r":{"w":3,"o":136},"s":{"w":3,"o":143},"t":{"w":3,"o":150},"u":{"w":4,"o":157},"v":{"w":4,"o":165},"w":{"w":5,"o":173},"x":{"w":3,"o":182},"y":{"w":4,"o":189},"z":{"w":3,"o":197},"ñ":{"w":4,"o":204},"ç":{"w":4,"o":212},"A":{"w":5,"o":220},"B":{"w":4,"o":229},"C":{"w":6,"o":237},"D":{"w":6,"o":247},"E":{"w":4,"o":257},"F":{"w":4,"o":265},"G":{"w":6,"o":273},"H":{"w":6,"o":283},"I":{"w":2,"o":293},"J":{"w":2,"o":299},"K":{"w":5,"o":305},"L":{"w":4,"o":314},"M":{"w":7,"o":322},"N":{"w":6,"o":333},"O":{"w":6,"o":343},"P":{"w":4,"o":353},"Q":{"w":6,"o":361},"R":{"w":5,"o":371},"S":{"w":4,"o":380},"T":{"w":5,"o":388},"U":{"w":6,"o":397},"V":{"w":5,"o":407},"W":{"w":7,"o":416},"X":{"w":5,"o":427},"Y":{"w":5,"o":436},"Z":{"w":5,"o":445},"!":{"w":2,"o":454},"?":{"w":3,"o":460},",":{"w":2,"o":467},".":{"w":2,"o":473},"@":{"w":6,"o":479},"/":{"w":4,"o":489},":":{"w":2,"o":497},";":{"w":2,"o":503},"á":{"w":4,"o":588},"é":{"w":4,"o":596},"í":{"w":2,"o":604},"ó":{"w":4,"o":610},"ú":{"w":4,"o":618},"à":{"w":4,"o":626},"è":{"w":4,"o":634},"ì":{"w":2,"o":642},"ò":{"w":4,"o":648},"ù":{"w":4,"o":656}}
+            lineHeight: 12
+            fancyDrawText: (t, x, y)@>
+                { charMap, lineHeight, glyphs } = @
+                scale = 2
+                { fancy_r } = @
+                fancy_r ?= 0x209532 + x + y
+                fancy = 0
+                for c in t
+                    p = charMap[c]
+                    { w, o } = p
+                    # throw o
+                    
+                    fancy_r = (0x2309230 ^ fancy_r * fancy_r) >> 8
+                    fancy += (((fancy_r >> 1)&1) - (fancy_r & 1))
+                    fancy = (fancy > +4 then +4 else fancy < -4 then -4 else fancy)
+                    # throw r & 7
+                    
+                    @ctx.drawImage glyphs, o, 0, w + 4, lineHeight, x, (y + fancy) * scale, (w + 4) * scale, lineHeight * scale
+                    x += (w + 1) * scale
+                @fancy_r = fancy_r
+            drawText: (t, x, y)@>
+              { charMap, lineHeight, glyphs } = @
+              scale = 2
+              for c in t
+                p = charMap[c]
+                { w, o } = p
+                # throw o
+                @ctx.drawImage glyphs, o, 0, w + 4, lineHeight, x, y * scale, (w + 4) * scale, lineHeight * scale
+                x += (w + 1) * scale
           
+          narrator: do->
+            first: null
+            last: null
+            add: (t)@>
+              { last, game } = @
+              game.other.narrator = @ unless game.other.narrator?
+              first = null
+              for c in t
+                continue if c is "\n"
+                c = c: c
+                last = (last? then last.next = c else c)
+                first ?= last
+              @last = last
+              @first ?= first
+            Math: Math
+            draw: @>
+              { first, game } = @
+              unless first?
+                delete game.other.narrator
+                return
+              { charMap, glyphs, lineHeight } = @
+              { radx, rady } = game
+              radx2 = radx * 2
+              px = -radx
+              ex = radx
+              dy = rady - rady / 3
+              last = null
+              while first?
+                # x = first.x
+                unless (x = first.x)?
+                  if x > radx2
+                    break
+                  else
+                    first.x = radx2
+                    break
+                p = charMap[first.c]
+                x--
+                x = px if x < px
+                first.x = x
+                ly = last?.y
+                y = first.y ?= ly ? dy
+                y += ((@Math.random()*3)|0) - 1
+                ly? then
+                  dd = 1 + (x - px)
+                  y = (y > ly + dd then ly + dd else y < ly - dd then ly - dd else y)
+                first.y = y
+                { o, w } = p
+                # y = 40
+                scale = 2
+                @ctx.drawImage glyphs, o, 0, w + 4, lineHeight, x * scale, y * scale, (w + 4) * scale, lineHeight * scale
+                px = x + w + 1
+                last = first
+                first = first.next
+                @first = first if x <= -w
+            __proto__: textRenderer
+
+          waves:
+            intro:  @>
+              
+              
+            game:   @>
+              
+              
+            score:  @>
+              
+              
+            setup:  @>
+              
+
           # PinkWaveletPlane: PinkWaveletPlane = do->
           #   waterscapeSuper: waterscapeSuper = SeamlessPlane
           #   __proto__: waterscapeSuper
@@ -923,7 +1052,10 @@ genPage = ->
               # ctx.fillRect 0, 0, @w, @h
               
           setup: ->
-            { bluescape, radx, rady } = @
+            { time, bluescape, radx, rady } = @
+
+            @textRenderer.ctx = jaws.context
+            @narrator.game = @
 
             bluescape.w = radx
             bluescape.h = rady
@@ -947,6 +1079,23 @@ genPage = ->
             x.addEventListener "touchend",     tend, true
             x.addEventListener "touchleave",   tend, true
             x.addEventListener "touchcancel",  tend, true
+
+            time.game = @
+            time.tickTime = 1.0 / @fps
+            time.setFutureChain([
+              do->
+                after: 0
+                run: @> @narrator.add "Vilma, "
+              do->
+                after: 4
+                run: @> @narrator.add "the Happy Vaquita,\n"
+              do->
+                after: 4
+                run: @> @narrator.add "presents\n"
+              do->
+                after: 4
+                run: @> @narrator.add "The Moon is Sinking"
+            ])
 
             @collisions.setup(radx, rady)
           radx: screen_x1
@@ -990,26 +1139,45 @@ genPage = ->
             clear: @>
               @b = new @Array(@b.length) # Discrete board for detecting collisions
               @l = [ ] # List of collisions targets
+          time:
+            current: 0
+            advance: @>
+              { current, game, tickTime } = @
+              (current += tickTime) > 1 then
+                current -= 1
+                (future = @future)? then
+                  future.after > 0 then future.after-- else
+                    @future = future.next
+                    future.run.apply game
+              @current = current
+            setFutureChain: (events)@>
+              p = null
+              for e in events
+                p?.next = e
+                p = e
+              @future = events[0]
+            future: null
+          other: { }
           draw: @>
-            { jaws, spaceKey, radx, rady, vilma, vaquitas, cameos, stilla, rad, collisions } = @
-
-            @addVaquita() if (!(@gameloop.ticks & 0x7f) and vaquitas.length < 1) or jaws.pressed[spaceKey]
-
+            { jaws, radx, rady, vilma, vaquitas, cameos, stilla, rad, collisions } = @
+          
+            # @addVaquita() if (!(@gameloop.ticks & 0x7f) and vaquitas.length < 1) or jaws.pressed[spaceKey]
+          
             vilma.fpx += vilma.px
             vilma.fpy += vilma.py
             vilma.move()
-
+          
             if true
               { px, py, fpx, fpy } = vilma
-  
+            
               vilma.fpx -= px
               vilma.fpy -= py
               vilma.px = 0
               vilma.py = 0
-  
+            
               px = px | 0
               py = py | 0
-  
+            
               @bluescape.frame jaws.context, -fpx, -fpy
             else
               { px, py } = vilma
@@ -1023,18 +1191,18 @@ genPage = ->
               py = py | 0
                 
               @bluescape.frame jaws.context, -px, -py
-
+          
             collisions.a vilma
-
+          
             for v in vaquitas
               x = v.px -= px
               y = v.py -= py
               v.draw()
               if (x >= -radx) and (x < radx) and (y >= -rady) and (y < rady)
                 collisions.a v
-
+          
             vilma.draw()
-
+          
             if stilla?
               x = stilla.px -= px
               y = stilla.py -= py
@@ -1045,7 +1213,7 @@ genPage = ->
                 stilla.draw(collisions, @)
                 if (x >= -radx) and (x < radx) and (y >= -rady) and (y < rady)
                   collisions.a stilla
-
+          
             for k,v of cameos
               continue unless v?
               x = v.px -= px
@@ -1055,24 +1223,35 @@ genPage = ->
               else
                 v.draw(collisions, @)
                 collisions.q v
-
+          
             @encounters.generate(@,-radx, -rady, radx * 2, rady * 2, px, py)
-
+          
             collisions.clear()
+          
+            # @textRenderer.fancyDrawText "Vilma, the Happy Vaquita, presents.....", 21, 65
+            v.draw() for k,v of @other
+
+            @time.advance()
               
             if (@gameloop.ticks & 0xff) is 0xff
               fps.innerHTML = "#{@gameloop.fps} fps"
-
+          
           jaws: jaws
+          window: window
           spaceKey: spaceKey
-        if true
-          jaws.init()
-          jaws.setupInput();
-          window.game = game = new Demo
-          gameloop = new jaws.GameLoop(game, { fps:24 })
-          (game.gameloop = gameloop).start()
-        else
-          jaws.start Demo, fps:25
+          fps: 24
+          setupJaws: (Demo)@>
+            { jaws, window, fps } = @
+            if true
+              jaws.init()
+              jaws.setupInput();
+              window.game = game = new Demo
+              gameloop = new jaws.GameLoop(game, { fps })
+              (game.gameloop = gameloop).start()
+            # else
+            # jaws.start Demo, fps:25
+        Demo::setupJaws(Demo)
+        
 
       #   gameFrame = -> reportErrors ->
       #     if (time & 0xff) is 0x00 and vaquitas.length < 4
