@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.347"
+version = "0.2.360"
 
 { htmlcup } = require 'htmlcup'
 
@@ -898,23 +898,28 @@ genPage = ->
               ex = radx
               dy = rady - rady / 3
               last = null
+              { random } = @Math
               while first?
                 # x = first.x
                 unless (x = first.x)?
-                  if x > radx2
-                    break
-                  else
-                    first.x = radx2
+                    unless px > radx2 - 10
+                        first.x = radx2
                     break
                 p = charMap[first.c]
-                x--
+                isLast = x < radx2
+                x -= radx
+                # x -= 1 + (atan((x * x / 100) / 50) | 0)
+                x -= 1 + ((x * x) >> 10)
+                x += radx
                 x = px if x < px
                 first.x = x
                 ly = last?.y
                 y = first.y ?= ly ? dy
-                y += ((@Math.random()*3)|0) - 1
+                rr = random()
+                y += ((rr*(3/0.33))|0) - 1 if rr < 0.33
                 ly? then
-                  dd = 1 + (x - px)
+                  dd = 1 + x - px
+                  # y = ly + dd
                   y = (y > ly + dd then ly + dd else y < ly - dd then ly - dd else y)
                 first.y = y
                 { o, w } = p
@@ -924,7 +929,7 @@ genPage = ->
                 px = x + w + 1
                 last = first
                 first = first.next
-                @first = first if x <= -w
+                @first = first if x <= -w              
             __proto__: textRenderer
 
           waves:
@@ -1093,13 +1098,13 @@ genPage = ->
                 run: @> @narrator.add "Vilma, "
               do->
                 after: 4
-                run: @> @narrator.add "the Happy Vaquita,\n"
+                run: @> @narrator.add "the Happy Vaquita, \n"
               do->
                 after: 4
-                run: @> @narrator.add "presents\n"
+                run: @> @narrator.add "presents... \n"
               do->
                 after: 4
-                run: @> @narrator.add "The Moon is Sinking"
+                run: @> @narrator.add "The Moon is sinking"
             ])
 
             @collisions.setup(radx, rady)
@@ -1240,7 +1245,6 @@ genPage = ->
               
             if (@gameloop.ticks & 0xff) is 0xff
               fps.innerHTML = "#{@gameloop.fps} fps"
-          
           jaws: jaws
           window: window
           spaceKey: spaceKey
