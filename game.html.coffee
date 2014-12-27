@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.360"
+version = "0.2.397"
 
 { htmlcup } = require 'htmlcup'
 
@@ -170,6 +170,8 @@ genPage = ->
             draw: ->
               @py--
               super()
+            oxygen: 10
+            score: 5
             bumpedInto: (o, qd, dx, dy)@>
               return if @dead
               # if dx * dx * 2 > qd
@@ -321,18 +323,32 @@ genPage = ->
             goodnight: (game)@> game.quitSlowBubbles()
             bumpedInto: (o)@>
               o.dead = true
+          oxygenation: oxygenation =
+            create: @> oxygen: 0.7;  __proto__: @
+            addFrom: (o)@>
+              (o = o.oxygen)? then
+                { oxygen } = @
+                oxygen += o * 0.001
+                if oxygen > 1.0
+                  oxygen = 1.0
+                @oxygen = oxygen
+            consume: @>
+              @oxygen *= 0.99999
           Vaquita: Vaquita = class extends Sprite
             twist: [ pixyvaquita_twist_l, pixyvaquita_twist_r ]
             constructor: ->
               @lr = 16
               @tb = 16
+              @oxygen = oxygenation.create()
               super()
             draw: ->
+                  @oxygen.consume()
                   if @vx < 0
                     @lr = - 18
                   else if @vx > 0
                     @lr = 18
                   super()
+            bumpedInto: (x)@> @oxygen.addFrom(x)
           AiVaquita: AiVaquita = class extends Vaquita
             constructor: ->
               @image = pixyvaquita
@@ -366,6 +382,7 @@ genPage = ->
               @fpy = @py ? 0
               @touch = @game.touchInput
               @auto_to = 40
+              @score = 0
             beat_lr: 0
             move: ->
               { touch } = @
@@ -436,6 +453,10 @@ genPage = ->
                 else if vx * vx + (vy * vy / 4) > 1
                   @image = @twist[@beat_lr++ & 1]
               super()
+            bumpedInto: (x)@>
+              @oxygen.addFrom(x)
+              { score } = x
+              @score += score if score?
           addVaquita: ->
               # n = v.cloneNode()
               # n.setAttribute "opacity", "0.5"
@@ -874,7 +895,7 @@ genPage = ->
           narrator: do->
             first: null
             last: null
-            add: (t)@>
+            say: (t)@>
               { last, game } = @
               game.other.narrator = @ unless game.other.narrator?
               first = null
@@ -931,7 +952,21 @@ genPage = ->
                 first = first.next
                 @first = first if x <= -w              
             __proto__: textRenderer
-
+          scoreBox:
+              textRenderer: textRenderer
+              score: 0
+              draw: @>
+                  { game, textRenderer } = @
+                  textRenderer.drawText "Score: #{game.vilma.score}", 0, 10
+                  textRenderer.drawText "Time: #{game.getPlayTimeText(2)}", 0, 20
+                  textRenderer.drawText "Oxygen: #{game.vilma.oxygen.oxygen * 100 + 0.1 | 0}", 0, 30
+                  textRenderer.drawText "Depth: #{(game.getDepth() * 100).toFixed(1)} m", 0, 40
+              show: @>
+                  { game } = @
+                  game.other.scoreBox = @
+              hide: @>
+                  { game } = @
+                  delete game.other.scoreBox
           waves:
             intro:  @>
               
@@ -988,7 +1023,9 @@ genPage = ->
           #     # t.restore()
           #   logzoom: 0
           seafloor: seafloorPlane = __proto__: SeaFloor
-          getDepth: @> @seafloor.fy / @seafloor.mfy
+          getDepth: @>
+            r = @seafloor.fy / @seafloor.mfy
+            r < 0 then 0 else r
           waterscape: waterscape = do->
             __proto__: WaterPlane
             # color: "cyan"
@@ -1093,18 +1130,26 @@ genPage = ->
             time.game = @
             time.tickTime = 1.0 / @fps
             time.setFutureChain([
+              # do->
+              #   after: 0
+              #   run: @> @narrator.say "Vilma, "
+              # do->
+              #   after: 4
+              #   run: @> @narrator.say "the Happy Vaquita, \n"
+              # do->
+              #   after: 4
+              #   run: @> @narrator.say "presents... \n"
+              # do->
+              #   after: 4
+              #   run: @> @narrator.say "The Moon is sinking"
               do->
                 after: 0
-                run: @> @narrator.add "Vilma, "
-              do->
-                after: 4
-                run: @> @narrator.add "the Happy Vaquita, \n"
-              do->
-                after: 4
-                run: @> @narrator.add "presents... \n"
-              do->
-                after: 4
-                run: @> @narrator.add "The Moon is sinking"
+                run: @>
+                  @time.playTime = 0
+                  @vilma.score = 0
+                  @scoreBox.game = @
+                  @scoreBox.show()
+              
             ])
 
             @collisions.setup(radx, rady)
@@ -1149,12 +1194,24 @@ genPage = ->
             clear: @>
               @b = new @Array(@b.length) # Discrete board for detecting collisions
               @l = [ ] # List of collisions targets
+          getPlayTimeText: (dec)@>
+            { playTime } = @time
+            s = playTime % 60
+            playTime = (playTime / 60) | 0
+            m = playTime % 60
+            playTime = (playTime / 60) | 0
+            m = m.toString().replace(/^[0-9]$/, ((x)-> "0" + x))
+            s = s.toFixed(dec).replace(/^[0-9][.]/, ((x)-> "0" + x))            
+            "#{playTime}:#{m}:#{s}".replace(/:([0-9][:.])/g, ((x, y)-> ":0" + y))
           time:
+            playTime: 0
             current: 0
             advance: @>
               { current, game, tickTime } = @
+              @playTime += tickTime
               (current += tickTime) > 1 then
                 current -= 1
+                @total++
                 (future = @future)? then
                   future.after > 0 then future.after-- else
                     @future = future.next
