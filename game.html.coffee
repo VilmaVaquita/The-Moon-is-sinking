@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.397"
+version = "0.2.398"
 
 { htmlcup } = require 'htmlcup'
 
@@ -1130,20 +1130,20 @@ genPage = ->
             time.game = @
             time.tickTime = 1.0 / @fps
             time.setFutureChain([
-              # do->
-              #   after: 0
-              #   run: @> @narrator.say "Vilma, "
-              # do->
-              #   after: 4
-              #   run: @> @narrator.say "the Happy Vaquita, \n"
-              # do->
-              #   after: 4
-              #   run: @> @narrator.say "presents... \n"
-              # do->
-              #   after: 4
-              #   run: @> @narrator.say "The Moon is sinking"
               do->
                 after: 0
+                run: @> @narrator.say "Vilma, "
+              do->
+                after: 4
+                run: @> @narrator.say "the Happy Vaquita, \n"
+              do->
+                after: 4
+                run: @> @narrator.say "presents... \n"
+              do->
+                after: 4
+                run: @> @narrator.say "The Moon is sinking"
+              do->
+                after: 4
                 run: @>
                   @time.playTime = 0
                   @vilma.score = 0
