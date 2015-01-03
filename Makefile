@@ -1,4 +1,4 @@
-TARGETS=index.html game.html
+TARGETS=game.appcache
 
 clean:
 	rm -f $(TARGETS)

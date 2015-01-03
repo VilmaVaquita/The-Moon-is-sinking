@@ -1,12 +1,12 @@
-# Copyright (c) 2013, 2014 Michele Bini
+# Copyright (c) 2013, 2014, 2015 Michele Bini
 
 # A game featuring a Vaquita, the smallest, most endagered marine cetacean
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.398"
+version = "0.2.441"
 
-{ htmlcup } = require 'htmlcup'
+htmlcup <. require 'htmlcup'
 
 htmlcup[x] = htmlcup.compileTag x for x in [ "svg", "rect", "g", "ellipse", "polygon", "line", "image", "defs", "linearGradient", "stop", "use" ]
 
@@ -42,7 +42,7 @@ gameAreaSize = [ 240, 360 ]
 
 genPage = ->
  htmlcup.printHtml "<!DOCTYPE html>\n"
- htmlcup.html lang:"en", manifest:"index.appcache", style:"height:100%", ->
+ htmlcup.html lang:"en", manifest:"game.appcache", style:"height:100%", ->
   @head ->
     @meta charset:"utf-8"
     @meta name:"viewport", content:"width=480, user-scalable=no"
@@ -91,24 +91,8 @@ genPage = ->
 
       screen_x1 = 120
       screen_y1 = 180
-      { sqrt } = Math
+      sqrt <. Math
 
-      ###
-      # an ad-hoc redux of hammer.js
-      hammerLet = do(window, navigator)@>
-        mobile_regex: mobile_regex = /mobile|tablet|ip(ad|hone|od)|android/i
-        support_touch: support_touch = ('ontouchstart' in window)
-        prefixed: prefixed =
-          global: window
-          get: (sym)@>
-            { global } = @g
-            for v in @vendors
-              return r if (r = global[v + sym])?
-            undefined
-          vendors: [ 'webkit', 'moz', 'MS', 'ms', 'o' ]
-        PointerEvent: PointerEvent ? prefixed.run(window, 'PointerEvent')?
-        suppourt_touch_only: support_touch && mobile_regex.test(navigator.userAgent)
-      ###
       jaws.onload = ->
         class Demo
           keyCodes: { left: leftKey, right: rightKey, up: upKey, down: downKey, space: spaceKey } = jaws.keyCodes
@@ -288,7 +272,7 @@ genPage = ->
                     closest = v
                     closestDist = d
                     game.quitSlowBubbles()
-                { vilma } = game
+                vilma <. game
                 consider vilma
                 if game.vaquitas?
                   consider v for v in game.vaquitas
@@ -327,7 +311,7 @@ genPage = ->
             create: @> oxygen: 0.7;  __proto__: @
             addFrom: (o)@>
               (o = o.oxygen)? then
-                { oxygen } = @
+                oxygen <. @
                 oxygen += o * 0.001
                 if oxygen > 1.0
                   oxygen = 1.0
@@ -385,14 +369,21 @@ genPage = ->
               @score = 0
             beat_lr: 0
             move: ->
-              { touch } = @
-              { tx, ty } = touch
-              itx = (tx >= 2 then 2 else tx <= -2 then -2 else 0)
-              ity = (ty >= 2 then 2 else ty <= -2 then -2 else 0)
-              touch.tx = tx * 0.9 - itx
-              touch.ty = ty * 0.9 - ity
-              ax = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0) - itx / 2
-              ay = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0) - ity / 2
+              touch <. @
+
+              # { tx, ty } = touch
+              # itx = (tx >= 2 then 2 else tx <= -2 then -2 else 0)
+              # ity = (ty >= 2 then 2 else ty <= -2 then -2 else 0)
+              # touch.tx = tx * 0.9 - itx
+              # touch.ty = ty * 0.9 - ity
+              # itx = - itx / 2
+              # ity = - ity / 2
+
+              itx = touch.ax * 0.088
+              ity = touch.ay * 0.088
+              
+              ax = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0)  +  itx
+              ay = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0)  +  ity
               if ax is 0 and ay is 0
                 if @auto_to > 0 then @auto_to-- else
                   @fvx ?= @vx
@@ -455,7 +446,7 @@ genPage = ->
               super()
             bumpedInto: (x)@>
               @oxygen.addFrom(x)
-              { score } = x
+              score <. x
               @score += score if score?
           addVaquita: ->
               # n = v.cloneNode()
@@ -581,21 +572,29 @@ genPage = ->
                   p: (depth)@> depth < 0.01 then 1 else (1-depth)/100000
                   add: (game, x, y)@> game.addStilla(x, y)
           touchInput:
+            ax: 0
+            ay: 0
             tx: 0
             ty: 0
             ongoing: { }
             __proto__:
               eval: eval
               start: (ev,el)@>
-                { ongoing } = @
+                ongoing <. @
                 for t in ev.changedTouches
                   { identifier, pageX, pageY } = t
                   ongoing[identifier] =
                     px: pageX
                     py: pageY
+                    ox: pageX
+                    oy: pageY
               move: (ev,el)@>
-                { ongoing } = @
-                { tx, ty } = @
+                ongoing <. @
+                @ .> tx
+                @ .> ty
+                ax = 0
+                ay = 0
+                
                 for t in ev.changedTouches
                   { identifier, pageX, pageY } = t
                   o = ongoing[identifier]
@@ -609,13 +608,20 @@ genPage = ->
                   # ty * dy > 0 then ty += dy else ty = dy * 2
                   o.px = pageX
                   o.py = pageY
-                @tx = tx
-                @ty = ty
+                  ax += pageX - o.ox
+                  ay += pageY - o.oy
+
+                @ .< tx
+                @ .< ty
+                @ .< ax
+                @ .< ay
               end: (ev,el)@>
-                { ongoing } = @
+                ongoing <. @
                 for t in ev.changedTouches
-                  { identifier } = t
+                  identifier <. t
                   delete ongoing[identifier]
+                @ax = 0
+                @ay = 0
               handle: (name)->
                 touchInput = @
                 (event)->
@@ -626,7 +632,7 @@ genPage = ->
           ColorPlane: ColorPlane = do->
             document: document
             init: @>
-              { color } = @
+              color <. @
               if color and typeof color is 'string'
                 e = @document.createElement "canvas"
                 e.width   = @w
@@ -641,7 +647,7 @@ genPage = ->
           GenericPlane: GenericPlane =
             document: document
             init: @>
-              { document } = @
+              document <. @
               e = document.createElement "canvas"
               e.width   = @w
               e.height  = @h
@@ -656,7 +662,7 @@ genPage = ->
                 c.webkitImageSmoothingEnabled = false;
                 c.mozImageSmoothingEnabled = false;
                 
-              { zoom } = @
+              zoom <. @
               { width, height } = @img
               @w = w = width * zoom
               @h = h = height * zoom
@@ -708,7 +714,7 @@ genPage = ->
               @fx = nfx
               @fy = nfy
               @lower?.frame t, dx, dy
-              { canvas } = ctx
+              canvas <. ctx
               t.drawImage canvas,  nx,      ny
               t.drawImage canvas,  nx - w,  ny
               t.drawImage canvas,  nx,      ny - h
@@ -743,7 +749,7 @@ genPage = ->
               nx = nfx >> abslogzoom
               ny = nfy >> abslogzoom
               if nx isnt x
-                { mx } = @
+                mx <. @
                 if nx >= mx
                   nx = mx
                   nfx = mx << abslogzoom
@@ -752,7 +758,7 @@ genPage = ->
                   nfx = 0
                 @x = nx
               if ny isnt y
-                { my } = @
+                 my <. @
                 if ny >= my
                   ny = my
                   nfy = my << abslogzoom
@@ -763,7 +769,7 @@ genPage = ->
               @fx = nfx
               @fy = nfy
               # @lower?.frame t, dx >> abslogzoom, dy >> abslogzoom
-              { canvas } = ctx
+              canvas <. ctx
               # @mny = 100
               t.drawImage canvas, -nx, -ny
               # t.drawImage canvas, 0, 0, w, h, -nx, -ny, w*pmul, h*pmul
@@ -778,7 +784,7 @@ genPage = ->
             # color: "#051555"
             seafloorImg: seafloor
             init: (options)@>
-              { seafloorImg } = @
+              seafloorImg <. @
               # @terror.init(options)
               w = seafloorImg.width
               h = seafloorImg.height
@@ -838,7 +844,7 @@ genPage = ->
                 lower.h ?= h
                 lower.moltf ?= moltf >> lower.logzoom if moltf?
               @waterscapeSuper.init.call @, options
-              { ctx } = @
+              ctx <. @
               for k,v of colors
                 ctx.fillStyle = v
                 colors[k] = ctx.fillStyle
@@ -866,7 +872,7 @@ genPage = ->
             fancyDrawText: (t, x, y)@>
                 { charMap, lineHeight, glyphs } = @
                 scale = 2
-                { fancy_r } = @
+                fancy_r <. @
                 fancy_r ?= 0x209532 + x + y
                 fancy = 0
                 for c in t
@@ -881,7 +887,7 @@ genPage = ->
                     
                     @ctx.drawImage glyphs, o, 0, w + 4, lineHeight, x, (y + fancy) * scale, (w + 4) * scale, lineHeight * scale
                     x += (w + 1) * scale
-                @fancy_r = fancy_r
+                fancy_r >. @
             drawText: (t, x, y)@>
               { charMap, lineHeight, glyphs } = @
               scale = 2
@@ -960,7 +966,8 @@ genPage = ->
                   textRenderer.drawText "Score: #{game.vilma.score}", 0, 10
                   textRenderer.drawText "Time: #{game.getPlayTimeText(2)}", 0, 20
                   textRenderer.drawText "Oxygen: #{game.vilma.oxygen.oxygen * 100 + 0.1 | 0}", 0, 30
-                  textRenderer.drawText "Depth: #{(game.getDepth() * 100).toFixed(1)} m", 0, 40
+                  depth = game.getDepth()
+                  depth > 0.0005 then textRenderer.drawText "Depth: #{(depth * 100).toFixed(1)} m", 0, 40
               show: @>
                   { game } = @
                   game.other.scoreBox = @
@@ -1026,6 +1033,7 @@ genPage = ->
           getDepth: @>
             r = @seafloor.fy / @seafloor.mfy
             r < 0 then 0 else r
+          resetDepth: @> @seafloor.fy = 0
           waterscape: waterscape = do->
             __proto__: WaterPlane
             # color: "cyan"
@@ -1093,7 +1101,7 @@ genPage = ->
 
               @bluescapeSuper.init.call @, options
 
-              { ctx } = @
+              ctx <. @
 
               # ctx.fillStyle = "#0099dd"
               # ctx.fillRect 0, 0, @w, @h
@@ -1117,7 +1125,7 @@ genPage = ->
             
             @encounters.generate(@,-radx, -rady, radx * 2, rady * 2, radx * 2, 0)
             
-            { touchInput } = @
+            touchInput <. @
             touchInput.game = @
             x = document.body
             x.addEventListener "touchmove",   touchInput.handle('move'), true
@@ -1132,19 +1140,24 @@ genPage = ->
             time.setFutureChain([
               do->
                 after: 0
-                run: @> @narrator.say "Vilma, "
+                run: ->
+                  @other.stayontop =
+                    draw: => @resetDepth()
+                  @narrator.say "Vilma, "
               do->
                 after: 4
-                run: @> @narrator.say "the Happy Vaquita, \n"
+                run: -> @narrator.say "the Happy Vaquita, \n"
               do->
                 after: 4
-                run: @> @narrator.say "presents... \n"
+                run: -> @narrator.say "presents... \n"
               do->
                 after: 4
-                run: @> @narrator.say "The Moon is sinking"
+                run: -> @narrator.say "The Moon is sinking"
               do->
                 after: 4
-                run: @>
+                run: ->
+                  delete @other.stayontop
+                  @resetDepth()
                   @time.playTime = 0
                   @vilma.score = 0
                   @scoreBox.game = @
