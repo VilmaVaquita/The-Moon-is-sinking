@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.522"
+version = "0.2.524"
 
 htmlcup <. require 'htmlcup'
 
@@ -395,9 +395,13 @@ genPage = ->
 
               itx = touch.ax * 0.088
               ity = touch.ay * 0.088
+
+              kby = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0)
+              kbx = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0)
+              kbx = (@lr > 0 then +1 else -1) if kbx is 0 and kby
               
-              ax = (if jaws.pressed[leftKey]  then -1 else 0)    +   (if jaws.pressed[rightKey]  then 1 else 0)  +  itx
-              ay = (if jaws.pressed[upKey]    then -1 else 0)    +   (if jaws.pressed[downKey]   then 1 else 0)  +  ity
+              ax = kbx + itx
+              ay = kby + ity
               if ax is 0 and ay is 0
                 if @auto_to > 0 then @auto_to-- else
                   @fvx ?= @vx
@@ -997,11 +1001,11 @@ genPage = ->
                   depth = game.getDepth()
                   depth > 0.0005 then textRenderer.drawText "Depth: #{(depth * 100).toFixed(1)} m", 0, 40
                   fmtnr = (x)-> x.toFixed(3).replace("-", ".")
-                  if true
-                    textRenderer.drawText fmtnr(game.vilma.vx),   0,    50
-                    textRenderer.drawText fmtnr(game.vilma.vy),   60,   50
-                    textRenderer.drawText fmtnr(game.vilma.fpx),  150,  50
-                    textRenderer.drawText fmtnr(game.vilma.fpy),  210,  50
+                  # if true
+                  #   textRenderer.drawText fmtnr(game.vilma.vx),   0,    50
+                  #   textRenderer.drawText fmtnr(game.vilma.vy),   60,   50
+                  #   textRenderer.drawText fmtnr(game.vilma.fpx),  150,  50
+                  #   textRenderer.drawText fmtnr(game.vilma.fpy),  210,  50
               show: @>
                   { game } = @
                   game.other.scoreBox = @
