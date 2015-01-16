@@ -4,7 +4,7 @@
 
 # This program is available under the terms of the MIT License
 
-version = "0.2.441"
+version = "0.2.522"
 
 htmlcup <. require 'htmlcup'
 
@@ -91,7 +91,22 @@ genPage = ->
 
       screen_x1 = 120
       screen_y1 = 180
-      sqrt <. Math
+      sqrt   <. Math
+      sin    <. Math
+      cos    <. Math
+      tan    <. Math
+      pow    <. Math
+      atan   <. Math
+      atan2  <. Math
+      round  <. Math
+      pi = atan2 0, -1
+      pi_h = atan2 1, 0
+      pi_h_i = 1.0 / pi_h
+      
+      sqr = (x)-> x * x
+      cube = (x)-> x * x * x
+      sharpener = (p)-> p2 = p - 1; (x)-> (pow(p, x)-1)/p2
+      sharpen = sharpener 86
 
       jaws.onload = ->
         class Demo
@@ -257,8 +272,7 @@ genPage = ->
                 else !(d >= 0) then
                   @px = 0
                   @py = 1
-                  throw "ir #{ir}"
-                
+                  # throw "ir #{ir}" # TODO: maybe report this error?
               else
                 closest = null
                 closestDist = null
@@ -408,12 +422,19 @@ genPage = ->
                   @fvx = null
                   @fvy = null
                 @auto_to = 600
+
               if (aq = ax * ax + ay * ay) > 1
                 aq = sqrt(aq)
                 ax /= aq
                 ay /= aq
+                # aq = 1
               ax *= 0.618
               ay *= 0.618
+
+              # aa = sqr(Math.sin(Math.atan2(ax, ay))) * 2
+              # ax *= aa
+              # ay *= aa
+              
               vx = @vx
               vy = @vy
               if ax * vx < 0
@@ -426,16 +447,23 @@ genPage = ->
               else
                 vy += ay
                 # vy * 0.9
-              if (vx * vx + vy * vy * 2) > 35
-                vx *= 0.8
-                vy *= 0.8
+                
+              if true
+                # new way to calculate drag
+                anglecomponent = 0.2 + (sharpen(sqr(sin(Math.atan2(vy, vx)))))
+                # anglecomponent = 1200 / anglecomponent
+                antidrag = 1 - sqr( atan( (vx * vx + vy * vy * 3) *anglecomponent / 9 ) * pi_h_i )
+                vx *= antidrag
+                vy *= antidrag
               else
-                vx *= 0.95
-                vy *= 0.95
-              @vx = vx
-              @vy = vy
-              @px = (@fpx += @vx)
-              @py = (@fpy += @vy)
+                if (vx * vx + vy * vy * 2) > 35
+                  vx *= 0.8
+                  vy *= 0.8
+                else
+                  vx *= 0.95
+                  vy *= 0.95
+              @px = round(@fpx += (@vx = vx))
+              @py = round(@fpy += (@vy = vy))
             draw: ->
               { vx, vy } = @
               if (@time++ % 3) is 0
@@ -968,6 +996,12 @@ genPage = ->
                   textRenderer.drawText "Oxygen: #{game.vilma.oxygen.oxygen * 100 + 0.1 | 0}", 0, 30
                   depth = game.getDepth()
                   depth > 0.0005 then textRenderer.drawText "Depth: #{(depth * 100).toFixed(1)} m", 0, 40
+                  fmtnr = (x)-> x.toFixed(3).replace("-", ".")
+                  if true
+                    textRenderer.drawText fmtnr(game.vilma.vx),   0,    50
+                    textRenderer.drawText fmtnr(game.vilma.vy),   60,   50
+                    textRenderer.drawText fmtnr(game.vilma.fpx),  150,  50
+                    textRenderer.drawText fmtnr(game.vilma.fpy),  210,  50
               show: @>
                   { game } = @
                   game.other.scoreBox = @
@@ -1331,7 +1365,6 @@ genPage = ->
             # jaws.start Demo, fps:25
         Demo::setupJaws(Demo)
         
-
       #   gameFrame = -> reportErrors ->
       #     if (time & 0xff) is 0x00 and vaquitas.length < 4
       #       addVaquita()
@@ -1357,6 +1390,8 @@ genPage = ->
       #     time++
         
       #   # setInterval gameFrame, 40
+      
+    @coffeeScript -> do ->
       # window.location.reload(true)
       window.addEventListener('load', ((e)->
         if (window.applicationCache)
