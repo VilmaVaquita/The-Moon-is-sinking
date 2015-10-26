@@ -6,6 +6,8 @@ This game is optimized phones for but can also be played on PCs.
 
 Vaquitas are the most endangered and smallest marine cetacean.  We hope that these little games will become viral and help Vaquitas become more famous and more protected.
 
+Game version: 0.2.524
+
 ## Contributing
 
 Anybody can contribute to this project especially in any of these areas:
@@ -21,7 +23,7 @@ Development is currently organized via Trello, but if you want to contributed by
 
 Chat with us at [freenode](http://freenode.org) #vilmavaquita
 
-## Contributors so far
+## Contributors
 
 * **Porpoise** - Ideas, Art
 * [**Rev22**](http://github.com/rev22)    - Programming
